@@ -1,4 +1,4 @@
-name: flame_tutorial
+name: fame_tutorial
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -39,6 +39,9 @@ dependencies:
   flame: ^1.0.0
   flame_audio:
   flame_tiled:
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
+  path_provider: ^2.0.12
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +53,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -88,7 +92,7 @@ flutter:
   fonts:
     - family: Audiowide
       fonts:
-        - asset: assets/fonts/Audiowide-Regular.ttf
+        - asset: assets/fonts/Audiowide/Audiowide-Regular.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

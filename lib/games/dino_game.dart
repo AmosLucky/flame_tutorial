@@ -1,18 +1,24 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flame/cache.dart';
+import 'package:flame/components.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame/parallax.dart';
 import 'package:flame/sprite.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import 'package:flutter/material.dart';
 
 import 'enemy/enemy_manager.dart';
+import 'package:flame/widgets.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-class DinoGame extends FlameGame with TapDetector {
+class DinoGame extends FlameGame with HasTappables, PanDetector {
   dino? dinoComponent;
   EnemyManager? enemyManager;
 
@@ -20,11 +26,15 @@ class DinoGame extends FlameGame with TapDetector {
   TextComponent? scoreText;
   double score = 0;
   double velocityMultiplierDelta = 1;
+  StartButton? startButton;
+  double health = 5;
+  //Dialog? dialog;
 
-  DinoGame() {}
+  Sprite? dialogSprite;
 
   Future<void> onLoad() async {
     print(size);
+    dialogSprite = await loadSprite("replay.png");
 
     //final image = await images.load('dino_sprite_sheet.png');
     // final angryPigImage = await images.load('AngryPig/Walk (36x30).png');
@@ -42,7 +52,8 @@ class DinoGame extends FlameGame with TapDetector {
         velocityMultiplierDelta: Vector2(velocityMultiplierDelta, 0));
 
     //////
-    scoreText = TextComponent();
+    scoreText = TextComponent(
+        textRenderer: TextPaint(style: TextStyle(fontFamily: "Audiowide")));
     scoreText!.position = Vector2(size[0] / 2 - (scoreText!.width), 0);
     scoreText!.text = score.toString();
 
@@ -53,40 +64,180 @@ class DinoGame extends FlameGame with TapDetector {
     add(dinoComponent!);
     add(enemyManager!);
     add(scoreText!);
+    startButton = StartButton(await loadSprite("pause_play.png"));
+
+    add(startButton!);
+    //add
+    displayLife();
+  }
+
+  @override
+  void onPanUpdate(DragUpdateInfo info) {
+    dinoComponent!.move(info.delta.game);
   }
 
   @override
   void update(double dt) {
+    // print(dinoComponent!.life.value);
     score += (60 * dt).toInt();
     scoreText!.text = score.toString();
 
     children.whereType<Enemy>().forEach((element) {
       if (dinoComponent!.distance(element) < 20) {
         dinoComponent!.hit();
+        if (health == 0) {
+          endGame();
+        }
       }
     });
     velocityMultiplierDelta += 0.01;
     super.update(dt);
   }
 
-  @override
-  void onTapUp(TapUpInfo info) {
-    dinoComponent!.jump();
-    //print("oooo");
-    // TODO: implement onTapUp
-    super.onTapUp(info);
+  endGame() async {
+    // Timer t =  Timer(1, onTick: () {
+    //   pauseEngine();
+    // });
+    //t.start();
+
+    add(Dialog(dialogSprite!));
+    // remove(dinoComponent!);
+    pauseEngine();
   }
 
   @override
-  void onTapDown(TapDownInfo info) {
-    //print("oooo1");
+  void onTapDown(int pointerId, TapDownInfo info) {
+    dinoComponent!.jump();
     // TODO: implement onTapDown
-    super.onTapDown(info);
+    super.onTapDown(pointerId, info);
+  }
+
+  reset() {
+    health = 5;
+    displayLife();
+  }
+
+  displayLife() async {
+    for (var i = 1; i <= health; i++) {
+      final positionX = 40 * i;
+      await add(
+        HeartComponent(
+          await loadSprite("hearth.png"),
+          heartNumber: i.toDouble(),
+          hPosition: Vector2(positionX.toDouble() + size[0] - 300, 20),
+        ),
+      );
+    }
+  }
+
+  @override
+  void lifecycleStateChange(AppLifecycleState state) {
+    // TODO: implement lifecycleStateChange
+    switch (state) {
+      case AppLifecycleState.resumed:
+        break;
+      case AppLifecycleState.paused:
+        this.pauseEngine();
+        break;
+      case AppLifecycleState.detached:
+        this.pauseEngine();
+        break;
+      case AppLifecycleState.inactive:
+        this.pauseEngine();
+        break;
+    }
+    super.lifecycleStateChange(state);
   }
 }
 
-class dino extends SpriteAnimationComponent {
+class HeartComponent extends SpriteComponent with HasGameRef<DinoGame> {
+  Vector2 hPosition;
+  double heartNumber;
+
+  HeartComponent(Sprite sprite,
+      {required this.hPosition, required this.heartNumber}) {
+    // gameRef.pauseEngine();
+    this.sprite = sprite;
+    size = Vector2.all(35);
+    position = hPosition;
+  }
+  onLoad() {
+    print(heartNumber);
+  }
+
+  @override
+  void update(double dt) {
+    if (gameRef.health < heartNumber) {
+      removeFromParent();
+    }
+    // TODO: implement update
+    super.update(dt);
+  }
+}
+
+class Dialog extends SpriteComponent with HasGameRef<DinoGame>, Tappable {
+  Dialog(Sprite sprite) {
+    // gameRef.pauseEngine();
+    this.sprite = sprite;
+    size = Vector2(200, 200);
+    position = Vector2(200, 100);
+
+    // gameRef.pauseEngine();
+  }
+
+  @override
+  bool onTapDown(TapDownInfo info) {
+    gameRef.score = 0;
+    gameRef.health = 5;
+    gameRef.resumeEngine();
+    gameRef.reset();
+    gameRef.enemyManager!.reset();
+    gameRef.dinoComponent!.reset();
+    gameRef.children.whereType<Enemy>().forEach((element) {
+      //remove(element);
+      this.makeTransparent();
+    });
+    removeFromParent();
+
+    //print("pppp");
+    // TODO: implement onTapDown
+    return super.onTapDown(info);
+  }
+}
+
+class StartButton extends SpriteComponent with HasGameRef<DinoGame>, Tappable {
+  bool gamePlaying = false;
+  StartButton(Sprite sprite) {
+    // gameRef.pauseEngine();
+    this.sprite = sprite;
+  }
+  onLoad() async {
+    size = Vector2(50, 50);
+    position = Vector2(20, 20);
+  }
+
+  @override
+  bool onTapDown(TapDownInfo info) {
+    if (!gamePlaying) {
+      AudioManager.instance.pauseBGM();
+      gameRef.resumeEngine();
+      gamePlaying = true;
+    } else {
+       AudioManager.instance.resumeBGM();
+      gameRef.pauseEngine();
+      gamePlaying = false;
+    }
+
+    //print("pppp");
+    // TODO: implement onTapDown
+    return super.onTapDown(info);
+  }
+}
+
+class dino extends SpriteAnimationComponent with HasGameRef<DinoGame> {
   SpriteSheet? spriteSheet;
+  int health = 3;
+  ValueNotifier<int> life = ValueNotifier(5);
 
   Vector2? screenSize;
   var idleAnimation;
@@ -122,6 +273,10 @@ class dino extends SpriteAnimationComponent {
     yMax = y;
   }
 
+  reset() {
+    animation = runAnimation;
+  }
+
   @override
   void update(double dt) {
     //final velocity = initial velocity + GRAVITY * time
@@ -136,6 +291,7 @@ class dino extends SpriteAnimationComponent {
       this.speedY = 0;
     }
     _timer!.update(dt);
+
     super.update(dt);
   }
 
@@ -144,18 +300,29 @@ class dino extends SpriteAnimationComponent {
     animation = runAnimation;
   }
 
+  void move(Vector2 delta) {
+    position.add(delta);
+  }
+
   void hit() {
     if (!isHit) {
       animation = hitAnimation;
       _timer!.start();
+      isHit = true;
+      // health -= 1;
+      gameRef.health -= 1;
+      life.value -= 1;
+      AudioManager.instance.playSFX("hurt7.wav");
     }
   }
 
   void jump() {
     if (isOnGround()) {
       this.speedY = -350;
+      AudioManager.instance.playSFX("jump14.wav");
     }
   }
+  //0699020431
 
   bool isOnGround() {
     return (this.y >= this.yMax);
@@ -254,5 +421,61 @@ class Enemy extends SpriteAnimationComponent {
 
     // TODO: implement update
     super.update(dt);
+  }
+}
+
+class AudioManager {
+  AudioManager._interal();
+  static AudioManager _instance = AudioManager._interal();
+  static AudioManager get instance => _instance;
+  void init(List<String> fileNames) async {
+    FlameAudio.bgm.initialize();
+    await FlameAudio.audioCache.loadAll(fileNames);
+    pref = await Hive.openBox("preference");
+
+    if (pref!.get("bgm") == null) {
+      pref!.put("bgm", true);
+    }
+
+    if (pref!.get("sfx") == null) {
+      pref!.put("sfx", true);
+    }
+    _sfx = ValueNotifier(pref!.get("sfx"));
+    _bgm = ValueNotifier(pref!.get("bgm"));
+  }
+
+  ValueNotifier<bool>? _sfx;
+  ValueNotifier<bool>? _bgm;
+  Box? pref;
+
+  ValueNotifier<bool>? get lisenablesfx => _sfx;
+  ValueNotifier<bool>? get lisenablebgm => _bgm;
+
+  void setSFX(bool flag) {
+    pref!.put("sfx", true);
+    _sfx!.value = flag;
+  }
+
+  void setBGN(bool flag) {
+    pref!.put("bgm", true);
+    _bgm!.value = flag;
+  }
+
+  void startBGM(String filename) {
+    FlameAudio.bgm.play(filename, volume: 0.4);
+  }
+
+  void pauseBGM() {
+     FlameAudio.bgm.pause();
+  }
+  void playBGM() {}
+  void stopBGM() {}
+  void resumeBGM() {
+    FlameAudio.bgm.resume();
+  }
+
+
+  void playSFX(String filename) {
+    FlameAudio.play(filename);
   }
 }

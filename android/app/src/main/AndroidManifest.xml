@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.flame_tutorial">
    <application
-        android:label="flame_tutorial"
+        android:label="Dino flame Game"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

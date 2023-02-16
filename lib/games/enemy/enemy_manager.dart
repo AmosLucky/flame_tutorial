@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:flame/components.dart';
-import 'package:flame_tutorial/games/dino_game.dart';
+
+import '../dino_game.dart';
+
 
 class EnemyManager extends Component with HasGameRef<DinoGame> {
   Random? random;
@@ -45,5 +47,13 @@ class EnemyManager extends Component with HasGameRef<DinoGame> {
     }
     // TODO: implement update
     super.update(dt);
+  }
+
+  reset() {
+    
+    spawnLevel = 0;
+    timer = Timer(4, repeat: true, onTick: () {
+      spawnRandomEnemy();
+    });
   }
 }
