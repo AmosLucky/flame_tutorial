@@ -8,7 +8,7 @@ import 'package:flame/input.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 
-class ElenaMain extends FlameGame with HasTappables {
+class ElenaMain extends FlameGame  {
   SpriteComponent woman = new SpriteComponent();
 
   MuteMusicButton muteButton = new MuteMusicButton();
@@ -56,17 +56,18 @@ class ElenaMain extends FlameGame with HasTappables {
   }
 }
 
-class MuteMusicButton extends SpriteComponent with Tappable {
+class MuteMusicButton extends SpriteComponent  {
   bool isPlaying = true;
   @override
-  bool onTapUp(TapUpInfo info) {
+  bool onTapUp( info) {
    if(isPlaying){
      isPlaying = false;
    }else{
      isPlaying = true;
    }
     print("Mute Audio");
+
     // TODO: implement onTapUp
-    return super.onTapUp(info);
+    return true;
   }
 }

@@ -1,10 +1,11 @@
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class MyGame extends FlameGame with HasTappables {
+class MyGame extends FlameGame  {
   SpriteComponent girl = new SpriteComponent();
   SpriteComponent boy = new SpriteComponent();
   SpriteComponent background = new SpriteComponent();
@@ -140,7 +141,7 @@ class MyGame extends FlameGame with HasTappables {
   }
 }
 
-class DialogButton extends SpriteComponent with Tappable {
+class DialogButton extends SpriteComponent  {
   int scene2Leve = 0;
   @override
   bool onTapDown(TapDownInfo info) {
@@ -152,6 +153,6 @@ class DialogButton extends SpriteComponent with Tappable {
     } catch (e) {
       return false;
     }
-    return super.onTapCancel();
+///return super.onTapCancel();
   }
 }

@@ -5,6 +5,7 @@ import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
+import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame/parallax.dart';
@@ -18,7 +19,7 @@ import 'package:flame/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class DinoGame extends FlameGame with HasTappables, PanDetector {
+class DinoGame extends FlameGame with PanDetector {
   dino? dinoComponent;
   EnemyManager? enemyManager;
 
@@ -73,7 +74,7 @@ class DinoGame extends FlameGame with HasTappables, PanDetector {
 
   @override
   void onPanUpdate(DragUpdateInfo info) {
-    dinoComponent!.move(info.delta.game);
+    dinoComponent!.move(info.delta.global);
   }
 
   @override
@@ -109,7 +110,7 @@ class DinoGame extends FlameGame with HasTappables, PanDetector {
   void onTapDown(int pointerId, TapDownInfo info) {
     dinoComponent!.jump();
     // TODO: implement onTapDown
-    super.onTapDown(pointerId, info);
+    //super.onTapDown(pointerId, info);
   }
 
   reset() {
@@ -175,7 +176,7 @@ class HeartComponent extends SpriteComponent with HasGameRef<DinoGame> {
   }
 }
 
-class Dialog extends SpriteComponent with HasGameRef<DinoGame>, Tappable {
+class Dialog extends SpriteComponent with HasGameRef<DinoGame> {
   Dialog(Sprite sprite) {
     // gameRef.pauseEngine();
     this.sprite = sprite;
@@ -186,7 +187,7 @@ class Dialog extends SpriteComponent with HasGameRef<DinoGame>, Tappable {
   }
 
   @override
-  bool onTapDown(TapDownInfo info) {
+  bool ronTapDown(TapDownInfo info) {
     gameRef.score = 0;
     gameRef.health = 5;
     gameRef.resumeEngine();
@@ -201,11 +202,12 @@ class Dialog extends SpriteComponent with HasGameRef<DinoGame>, Tappable {
 
     //print("pppp");
     // TODO: implement onTapDown
-    return super.onTapDown(info);
+    //return super.onTapDown(info);
+    return true;
   }
 }
 
-class StartButton extends SpriteComponent with HasGameRef<DinoGame>, Tappable {
+class StartButton extends SpriteComponent with HasGameRef<DinoGame> {
   bool gamePlaying = false;
   StartButton(Sprite sprite) {
     // gameRef.pauseEngine();
@@ -223,14 +225,14 @@ class StartButton extends SpriteComponent with HasGameRef<DinoGame>, Tappable {
       gameRef.resumeEngine();
       gamePlaying = true;
     } else {
-       AudioManager.instance.resumeBGM();
+      AudioManager.instance.resumeBGM();
       gameRef.pauseEngine();
       gamePlaying = false;
     }
 
     //print("pppp");
     // TODO: implement onTapDown
-    return super.onTapDown(info);
+    return true;
   }
 }
 
@@ -466,14 +468,14 @@ class AudioManager {
   }
 
   void pauseBGM() {
-     FlameAudio.bgm.pause();
+    FlameAudio.bgm.pause();
   }
+
   void playBGM() {}
   void stopBGM() {}
   void resumeBGM() {
     FlameAudio.bgm.resume();
   }
-
 
   void playSFX(String filename) {
     FlameAudio.play(filename);

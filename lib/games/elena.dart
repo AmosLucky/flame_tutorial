@@ -6,7 +6,7 @@ import 'dart:math' as math;
 
 import 'package:flame/input.dart';
 
-class Elena extends FlameGame with HasTappables {
+class Elena extends FlameGame  {
   SpriteComponent woman = new SpriteComponent();
   SpriteComponent startButton = new SpriteComponent();
   SpriteComponent volumeMute = new SpriteComponent();
@@ -144,62 +144,62 @@ class Elena extends FlameGame with HasTappables {
   }
 }
 
-class ResetBtn extends SpriteComponent with Tappable {
+class ResetBtn extends SpriteComponent  {
   SpriteComponent component;
   ResetBtn({required this.component});
   @override
-  bool onTapDown(TapDownInfo info) {
+  bool onTapDown( info) {
     component.angle = 0;
     component.x = 0;
     // TODO: implement onTapCancel
-    return super.onTapCancel();
+    return  true;
   }
 }
 
-class RightButton extends SpriteComponent with Tappable {
+class RightButton extends SpriteComponent  {
   SpriteComponent component;
   RightButton({required this.component});
   @override
-  bool onTapDown(TapDownInfo info) {
+  bool onTapDown( info) {
     component.angle = 0;
     component.x -= 40;
     // TODO: implement onTapCancel
-    return super.onTapCancel();
+    return true;
   }
 }
 
-class LeftButton extends SpriteComponent with Tappable {
+class LeftButton extends SpriteComponent  {
   SpriteComponent component;
   LeftButton({required this.component});
   @override
-  bool onTapDown(TapDownInfo info) {
+  bool onTapDown( info) {
     component.angle = 0;
     component.x += 10;
     // TODO: implement onTapCancel
-    return super.onTapCancel();
+    return true;
   }
 }
 
-class TopButton extends SpriteComponent with Tappable {
+class TopButton extends SpriteComponent  {
   SpriteComponent component;
   TopButton({required this.component});
   @override
-  bool onTapDown(TapDownInfo info) {
+  bool onTapDown( info) {
     component.angle = 0;
     component.y -= 10;
     // TODO: implement onTapCancel
-    return super.onTapCancel();
+   return true;
   }
 }
 
-class BottomButton extends SpriteComponent with Tappable {
+class BottomButton extends SpriteComponent  {
   SpriteComponent component;
   BottomButton({required this.component});
   @override
-  bool onTapDown(TapDownInfo info) {
+  bool onTapDown( info) {
     component.angle = 0;
     component.y += 10;
     // TODO: implement onTapCancel
-    return super.onTapCancel();
+    return true;
   }
 }
